@@ -1,14 +1,15 @@
 import { CardRow, INITIAL_CARD_ROW } from "@/types/deck-calculator";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export function useDeckCalculator() {
   const [deckSize, setDeckSize] = useState<number | "">("");
   const [handSize, setHandSize] = useState<number | "">("");
   const [miscAmount, setMiscAmount] = useState(0);
+  const [miscMax, setMiscMax] = useState(0);
   const [cardRows, setCardRows] = useState<CardRow[]>([INITIAL_CARD_ROW]);
   const [nextId, setNextId] = useState(2);
 
-  useEffect(() => {
+  const calculateMiscAmount = useCallback(() => {
     let totalCardAmount = 0;
     cardRows.forEach((row) => {
       totalCardAmount += Number.parseInt(row.amount) || 0;
@@ -16,7 +17,22 @@ export function useDeckCalculator() {
 
     const effectiveDeckSize = typeof deckSize === "number" ? deckSize : 0;
     setMiscAmount(effectiveDeckSize - totalCardAmount);
-  }, [deckSize, cardRows]);
+  }, [cardRows, deckSize]);
+
+  const calculateMiscMax = useCallback(() => {
+    let totalMinCards = 0;
+    cardRows.forEach((row) => {
+      totalMinCards += Number.parseInt(row.min) || 0;
+    });
+
+    const effectiveHandSize = typeof handSize === "number" ? handSize : 0;
+    setMiscMax(effectiveHandSize - totalMinCards);
+  }, [cardRows, handSize]);
+
+  useEffect(() => {
+    calculateMiscAmount();
+    calculateMiscMax();
+  }, [calculateMiscAmount, calculateMiscMax]);
 
   const addRow = () => {
     const newRow: CardRow = {
@@ -51,13 +67,6 @@ export function useDeckCalculator() {
   const handleDeckSizeChange = (value: string) => {
     const newDeckSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
     setDeckSize(newDeckSize);
-    if (
-      typeof handSize === "number" &&
-      typeof newDeckSize === "number" &&
-      handSize > newDeckSize
-    ) {
-      setHandSize(newDeckSize);
-    }
   };
 
   const handleHandSizeChange = (value: string) => {
@@ -75,6 +84,7 @@ export function useDeckCalculator() {
     handSize,
     handleHandSizeChange,
     miscAmount,
+    miscMax,
     cardRows,
     addRow,
     removeRow,

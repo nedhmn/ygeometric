@@ -15,6 +15,7 @@ export default function DeckCalculator() {
     handSize,
     handleHandSizeChange,
     miscAmount,
+    miscMax,
     cardRows,
     addRow,
     removeRow,
@@ -85,7 +86,7 @@ export default function DeckCalculator() {
                 {miscAmount}
               </div>
               <div className="text-center text-gray-300">0</div>
-              <div className="text-center text-gray-300">0</div>
+              <div className="text-center text-gray-300">{miscMax}</div>
               {/* Added empty space to align with trash icon */}
               <div className="w-9"></div>
             </div>
