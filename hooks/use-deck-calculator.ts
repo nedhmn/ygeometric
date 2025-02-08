@@ -1,7 +1,7 @@
-import { CardRow, INITIAL_CARD_ROW } from "@/types/deck-calculator";
-import { useEffect, useState, useCallback } from "react";
 import { HypergeometricCalculator } from "@/lib/hypergeometric-calculator";
+import { CardRow, INITIAL_CARD_ROW } from "@/types/deck-calculator";
 import { HypergeometricParams } from "@/types/hypergeometric";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useDeckCalculator() {
   const [deckSize, setDeckSize] = useState<number | "">("");
@@ -12,24 +12,27 @@ export function useDeckCalculator() {
   const [nextId, setNextId] = useState(2);
   const [probability, setProbability] = useState<number | "">("");
 
-  // Calculate miscAmount and miscMax whenever relevant values change
-  useEffect(() => {
-    // Calculate miscAmount
-    let totalCardAmount = 0;
-    cardRows.forEach((row) => {
-      totalCardAmount += Number.parseInt(row.amount) || 0;
-    });
-    const effectiveDeckSize = typeof deckSize === "number" ? deckSize : 0;
-    setMiscAmount(effectiveDeckSize - totalCardAmount);
+  const cardAmounts = useMemo(() => {
+    return cardRows.map((row) => ({
+      amount: Number.parseInt(row.amount) || 0,
+      min: Number.parseInt(row.min) || 0,
+    }));
+  }, [cardRows]);
 
-    // Calculate miscMax
-    let totalMinCards = 0;
-    cardRows.forEach((row) => {
-      totalMinCards += Number.parseInt(row.min) || 0;
-    });
+  const { totalAmount, totalMin } = useMemo(() => {
+    return {
+      totalAmount: cardAmounts.reduce((sum, card) => sum + card.amount, 0),
+      totalMin: cardAmounts.reduce((sum, card) => sum + card.min, 0),
+    };
+  }, [cardAmounts]);
+
+  useEffect(() => {
+    const effectiveDeckSize = typeof deckSize === "number" ? deckSize : 0;
     const effectiveHandSize = typeof handSize === "number" ? handSize : 0;
-    setMiscMax(effectiveHandSize - totalMinCards);
-  }, [cardRows, deckSize, handSize]);
+
+    setMiscAmount(effectiveDeckSize - totalAmount);
+    setMiscMax(effectiveHandSize - totalMin);
+  }, [deckSize, handSize, totalAmount, totalMin]);
 
   const calculatorInputs = useCallback((): HypergeometricParams => {
     const deckSizeInput = Number(deckSize);
