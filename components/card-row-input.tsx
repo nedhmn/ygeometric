@@ -1,15 +1,25 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardRow } from "@/types/deck-calculator";
+import { Trash2 } from "lucide-react";
 
 interface CardRowInputProps {
   row: CardRow;
   index: number;
   updateRow: (index: number, field: keyof CardRow, value: string) => void;
+  removeRow: (id: number) => void;
+  cardRowsLength: number;
 }
 
-export function CardRowInput({ row, index, updateRow }: CardRowInputProps) {
+export function CardRowInput({
+  row,
+  index,
+  updateRow,
+  cardRowsLength,
+  removeRow,
+}: CardRowInputProps) {
   return (
-    <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 items-center">
+    <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
       <Input
         placeholder="Card Name"
         value={row.name}
@@ -37,6 +47,15 @@ export function CardRowInput({ row, index, updateRow }: CardRowInputProps) {
         onChange={(e) => updateRow(index, "max", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => removeRow(row.id)}
+        disabled={cardRowsLength === 1}
+        className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 }
