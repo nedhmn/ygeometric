@@ -119,9 +119,11 @@ export default function DeckCalculator() {
               </Button>
             </div>
           </div>
-          {/* Probability Display */}
+          {/* Output Display */}
           <div className="text-center py-4 font-medium">
-            {probability === "" ? (
+            {cardRows.length === 0 ? (
+              <span className="text-gray-300">Add a card to get started!</span>
+            ) : probability === "" ? (
               <span className="text-gray-300">
                 Unable to calculate. Please fix the values.
               </span>

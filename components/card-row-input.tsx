@@ -63,7 +63,7 @@ export function CardRowInput({
         variant="ghost"
         size="icon"
         onClick={() => removeRow(row.id)}
-        disabled={cardRowsLength === 1}
+        // disabled={cardRowsLength === 1}
         className="text-gray-400 hover:text-red-500 disabled:opacity-50"
       >
         <Trash2 className="h-4 w-4" />

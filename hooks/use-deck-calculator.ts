@@ -49,6 +49,10 @@ export function useDeckCalculator() {
   }, [deckState.deckSize, deckState.handSize, totalAmount, totalMin]);
 
   const calculatorInputs = useCallback((): HypergeometricParams => {
+    if (deckState.cardRows.length === 0) {
+      throw new Error();
+    }
+
     const deckSizeInput = Number(deckState.deckSize);
     const handSizeInput = Number(deckState.handSize);
 
@@ -151,13 +155,10 @@ export function useDeckCalculator() {
   }, []);
 
   const removeRow = useCallback((id: number) => {
-    setDeckState((prev) => {
-      if (prev.cardRows.length <= 1) return prev;
-      return {
-        ...prev,
-        cardRows: prev.cardRows.filter((row) => row.id !== id),
-      };
-    });
+    setDeckState((prev) => ({
+      ...prev,
+      cardRows: prev.cardRows.filter((row) => row.id !== id),
+    }));
   }, []);
 
   const handleDeckSizeChange = useCallback((value: string) => {
