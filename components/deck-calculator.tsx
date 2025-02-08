@@ -11,9 +11,9 @@ import { useDeckCalculator } from "@/hooks/use-deck-calculator";
 export default function DeckCalculator() {
   const {
     deckSize,
-    setDeckSize,
+    handleDeckSizeChange,
     handSize,
-    setHandSize,
+    handleHandSizeChange,
     miscAmount,
     cardRows,
     addRow,
@@ -39,7 +39,8 @@ export default function DeckCalculator() {
               placeholder="40"
               value={deckSize}
               type="number"
-              onChange={(e) => setDeckSize(e.target.value)}
+              min={0}
+              onChange={(e) => handleDeckSizeChange(e.target.value)}
               className="w-32 bg-white/5 border-white/10 text-white rounded-lg"
             />
 
@@ -54,7 +55,8 @@ export default function DeckCalculator() {
               placeholder="6"
               value={handSize}
               type="number"
-              onChange={(e) => setHandSize(e.target.value)}
+              min={0}
+              onChange={(e) => handleHandSizeChange(e.target.value)}
               className="w-32 bg-white/5 border-white/10 text-white rounded-lg"
             />
           </div>
@@ -67,7 +69,7 @@ export default function DeckCalculator() {
               <div className="font-medium text-gray-300 text-sm">Min</div>
               <div className="font-medium text-gray-300 text-sm">Max</div>
               {/* Added empty space to align with trash icon */}
-              <div className="w-9"></div>{" "}
+              <div className="w-9"></div>
             </div>
 
             {/* Miscellaneous Cards Row */}

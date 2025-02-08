@@ -2,8 +2,8 @@ import { CardRow, INITIAL_CARD_ROW } from "@/types/deck-calculator";
 import { useEffect, useState } from "react";
 
 export function useDeckCalculator() {
-  const [deckSize, setDeckSize] = useState("");
-  const [handSize, setHandSize] = useState("");
+  const [deckSize, setDeckSize] = useState<number | "">("");
+  const [handSize, setHandSize] = useState<number | "">("");
   const [miscAmount, setMiscAmount] = useState(0);
   const [cardRows, setCardRows] = useState<CardRow[]>([INITIAL_CARD_ROW]);
   const [nextId, setNextId] = useState(2);
@@ -14,7 +14,7 @@ export function useDeckCalculator() {
       totalCardAmount += Number.parseInt(row.amount) || 0;
     });
 
-    const effectiveDeckSize = Number.parseInt(deckSize) || 0;
+    const effectiveDeckSize = typeof deckSize === "number" ? deckSize : 0;
     setMiscAmount(effectiveDeckSize - totalCardAmount);
   }, [deckSize, cardRows]);
 
@@ -39,18 +39,41 @@ export function useDeckCalculator() {
   const updateRow = (index: number, field: keyof CardRow, value: string) => {
     const newRows = cardRows.map((row, i) => {
       if (i === index) {
-        return { ...row, [field]: value };
+        const updatedValue =
+          field === "name" ? value : Math.max(0, Number(value));
+        return { ...row, [field]: updatedValue };
       }
       return row;
     });
     setCardRows(newRows);
   };
 
+  const handleDeckSizeChange = (value: string) => {
+    const newDeckSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
+    setDeckSize(newDeckSize);
+    if (
+      typeof handSize === "number" &&
+      typeof newDeckSize === "number" &&
+      handSize > newDeckSize
+    ) {
+      setHandSize(newDeckSize);
+    }
+  };
+
+  const handleHandSizeChange = (value: string) => {
+    const newHandSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
+    if (typeof deckSize === "number") {
+      setHandSize(Math.min(newHandSize as number, deckSize));
+    } else {
+      setHandSize(newHandSize);
+    }
+  };
+
   return {
     deckSize,
-    setDeckSize,
+    handleDeckSizeChange,
     handSize,
-    setHandSize,
+    handleHandSizeChange,
     miscAmount,
     cardRows,
     addRow,
