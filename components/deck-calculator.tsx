@@ -78,7 +78,7 @@ export default function DeckCalculator() {
                   miscAmount < 0 ? "text-red-500" : "text-gray-300"
                 }`}
               >
-                {deckSize === "" ? "0" : miscAmount}
+                {miscAmount}
               </div>
               <div className="text-center text-gray-300">0</div>
               <div className="text-center text-gray-300">0</div>
@@ -92,28 +92,21 @@ export default function DeckCalculator() {
                   row={row}
                   index={index}
                   updateRow={updateRow}
+                  cardRowsLength={cardRows.length}
+                  removeRow={removeRow}
                 />
               ))}
             </div>
 
-            {/* Add/Remove Row Buttons */}
-            <div className="flex justify-end gap-2 mt-4">
+            {/* Add Row Button */}
+            <div className="flex justify-end mt-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={addRow}
                 className="border-white/10 text-white hover:bg-white/5 rounded-lg"
               >
-                +
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={removeRow}
-                disabled={cardRows.length === 1}
-                className="border-white/10 text-white hover:bg-white/5 disabled:opacity-50 rounded-lg"
-              >
-                -
+                Add card
               </Button>
             </div>
           </div>
