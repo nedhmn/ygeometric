@@ -1,7 +1,10 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CardRow } from "@/types/deck-calculator";
 import { Trash2 } from "lucide-react";
+import { useCallback } from "react";
 
 interface CardRowInputProps {
   row: CardRow;
@@ -9,6 +12,11 @@ interface CardRowInputProps {
   updateRow: (index: number, field: keyof CardRow, value: string) => void;
   removeRow: (id: number) => void;
   cardRowsLength: number;
+  handleNumberChange: (
+    index: number,
+    field: "amount" | "min" | "max",
+    value: string
+  ) => void;
 }
 
 export function CardRowInput({
@@ -17,6 +25,7 @@ export function CardRowInput({
   updateRow,
   cardRowsLength,
   removeRow,
+  handleNumberChange,
 }: CardRowInputProps) {
   return (
     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
@@ -31,7 +40,7 @@ export function CardRowInput({
         value={row.amount}
         type="number"
         min={0}
-        onChange={(e) => updateRow(index, "amount", e.target.value)}
+        onChange={(e) => handleNumberChange(index, "amount", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
       <Input
@@ -39,7 +48,7 @@ export function CardRowInput({
         value={row.min}
         type="number"
         min={0}
-        onChange={(e) => updateRow(index, "min", e.target.value)}
+        onChange={(e) => handleNumberChange(index, "min", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
       <Input
@@ -47,7 +56,7 @@ export function CardRowInput({
         value={row.max}
         type="number"
         min={0}
-        onChange={(e) => updateRow(index, "max", e.target.value)}
+        onChange={(e) => handleNumberChange(index, "max", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
       <Button

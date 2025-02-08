@@ -121,6 +121,16 @@ export function useDeckCalculator() {
     setCardRows(newRows);
   };
 
+  const handleNumberChange = useCallback(
+    (index: number, field: "amount" | "min" | "max", value: string) => {
+      const parsed = Math.max(0, Number(value));
+      if (!isNaN(parsed)) {
+        updateRow(index, field, String(parsed));
+      }
+    },
+    [updateRow]
+  );
+
   const handleDeckSizeChange = (value: string) => {
     const newDeckSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
     setDeckSize(newDeckSize);
@@ -146,6 +156,7 @@ export function useDeckCalculator() {
     addRow,
     removeRow,
     updateRow,
+    handleNumberChange,
     probability,
   };
 }

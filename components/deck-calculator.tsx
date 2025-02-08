@@ -20,6 +20,7 @@ export default function DeckCalculator() {
     addRow,
     removeRow,
     updateRow,
+    handleNumberChange,
     probability,
   } = useDeckCalculator();
 
@@ -99,6 +100,7 @@ export default function DeckCalculator() {
                   row={row}
                   index={index}
                   updateRow={updateRow}
+                  handleNumberChange={handleNumberChange}
                   cardRowsLength={cardRows.length}
                   removeRow={removeRow}
                 />
