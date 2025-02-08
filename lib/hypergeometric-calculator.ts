@@ -4,14 +4,25 @@ import {
 } from "@/types/hypergeometric";
 
 export class HypergeometricCalculator {
+  private factorialCache: { [key: number]: number } = {};
+
   private factorial(x: number): number {
     const parsed = parseInt(String(x), 10);
     if (isNaN(parsed) || parsed <= 0) return 1;
     if (parsed > 170) return Infinity;
-    return Array.from({ length: parsed }, (_, i) => i + 1).reduce(
-      (a, b) => a * b,
-      1
-    );
+
+    // Check cache first
+    if (this.factorialCache[parsed]) {
+      return this.factorialCache[parsed];
+    }
+
+    // Calculate and cache result
+    let result = 1;
+    for (let i = 2; i <= parsed; i++) {
+      result *= i;
+    }
+    this.factorialCache[parsed] = result;
+    return result;
   }
 
   private combinations(n: number, k: number): number {
