@@ -61,15 +61,17 @@ export default function DeckCalculator() {
 
           <div className="mt-8">
             {/* Column Headers */}
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 mb-2 text-center">
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 mb-2 text-center">
               <div></div>
               <div className="font-medium text-gray-300 text-sm">Amt</div>
               <div className="font-medium text-gray-300 text-sm">Min</div>
               <div className="font-medium text-gray-300 text-sm">Max</div>
+              {/* Added empty space to align with trash icon */}
+              <div className="w-9"></div>{" "}
             </div>
 
             {/* Miscellaneous Cards Row */}
-            <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 mb-6 items-center">
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 mb-6 items-center">
               <div className="font-medium text-right text-gray-300 text-sm">
                 Miscellaneous Cards
               </div>
@@ -82,6 +84,8 @@ export default function DeckCalculator() {
               </div>
               <div className="text-center text-gray-300">0</div>
               <div className="text-center text-gray-300">0</div>
+              {/* Added empty space to align with trash icon */}
+              <div className="w-9"></div>
             </div>
 
             {/* Card Rows */}
