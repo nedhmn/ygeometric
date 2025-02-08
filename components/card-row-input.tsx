@@ -30,6 +30,7 @@ export function CardRowInput({
         placeholder="3"
         value={row.amount}
         type="number"
+        min={0}
         onChange={(e) => updateRow(index, "amount", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
@@ -37,6 +38,7 @@ export function CardRowInput({
         placeholder="1"
         value={row.min}
         type="number"
+        min={0}
         onChange={(e) => updateRow(index, "min", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />
@@ -44,6 +46,7 @@ export function CardRowInput({
         placeholder="3"
         value={row.max}
         type="number"
+        min={0}
         onChange={(e) => updateRow(index, "max", e.target.value)}
         className="w-full text-center bg-white/5 border-white/10 text-white rounded-lg placeholder:text-gray-500"
       />

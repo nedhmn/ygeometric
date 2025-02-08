@@ -20,6 +20,7 @@ export default function DeckCalculator() {
     addRow,
     removeRow,
     updateRow,
+    probability,
   } = useDeckCalculator();
 
   return (
@@ -61,7 +62,6 @@ export default function DeckCalculator() {
               className="w-32 bg-white/5 border-white/10 text-white rounded-lg"
             />
           </div>
-
           <div className="mt-8">
             {/* Column Headers */}
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 mb-2 text-center">
@@ -117,12 +117,24 @@ export default function DeckCalculator() {
               </Button>
             </div>
           </div>
-
           {/* Probability Display */}
           <div className="text-center py-4 font-medium">
-            <span className="text-gray-300">You have a </span>
-            <span className="text-emerald-400">100.00%</span>
-            <span className="text-gray-300"> chance to open this hand.</span>
+            {probability === "" ? (
+              <span className="text-red-500">
+                Unable to calculate. Please fix the values.
+              </span>
+            ) : (
+              <>
+                <span className="text-gray-300">You have a </span>
+                <span className="text-emerald-400">
+                  {probability.toFixed(2)}%
+                </span>
+                <span className="text-gray-300">
+                  {" "}
+                  chance to open this hand.
+                </span>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
