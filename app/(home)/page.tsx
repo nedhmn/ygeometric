@@ -1,5 +1,9 @@
-import { Button } from "@/components/ui/button";
+import DeckCalculator from "@/components/deck-calculator";
 
 export default function Home() {
-  return <Button>Hello!</Button>;
+  return (
+    <>
+      <DeckCalculator></DeckCalculator>
+    </>
+  );
 }
