@@ -6,37 +6,44 @@ export function useDeckCalculator() {
   const [handSize, setHandSize] = useState("");
   const [miscAmount, setMiscAmount] = useState(0);
   const [cardRows, setCardRows] = useState<CardRow[]>([INITIAL_CARD_ROW]);
+  const [nextId, setNextId] = useState(2);
 
   useEffect(() => {
-    const totalCardAmount = cardRows.reduce(
-      (sum, row) => sum + (Number.parseInt(row.amount) || 0),
-      0
-    );
+    let totalCardAmount = 0;
+    cardRows.forEach((row) => {
+      totalCardAmount += Number.parseInt(row.amount) || 0;
+    });
+
     const effectiveDeckSize = Number.parseInt(deckSize) || 0;
     setMiscAmount(effectiveDeckSize - totalCardAmount);
   }, [deckSize, cardRows]);
 
   const addRow = () => {
     const newRow: CardRow = {
-      id: cardRows.length + 1,
+      id: nextId,
       name: "",
       amount: "",
       min: "",
       max: "",
     };
     setCardRows([...cardRows, newRow]);
+    setNextId(nextId + 1);
   };
 
-  const removeRow = () => {
+  const removeRow = (id: number) => {
     if (cardRows.length > 1) {
-      setCardRows(cardRows.slice(0, -1));
+      setCardRows(cardRows.filter((row) => row.id !== id));
     }
   };
 
   const updateRow = (index: number, field: keyof CardRow, value: string) => {
-    setCardRows(
-      cardRows.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-    );
+    const newRows = cardRows.map((row, i) => {
+      if (i === index) {
+        return { ...row, [field]: value };
+      }
+      return row;
+    });
+    setCardRows(newRows);
   };
 
   return {
