@@ -1,23 +1,35 @@
+// hooks/use-deck-calculator.ts
 import { HypergeometricCalculator } from "@/lib/hypergeometric-calculator";
-import { CardRow, INITIAL_CARD_ROW } from "@/types/deck-calculator";
+import { CardRow } from "@/types/deck-calculator";
 import { HypergeometricParams } from "@/types/hypergeometric";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const INITIAL_CARD_ROW: CardRow = {
+  id: 1,
+  name: "Thunder Dragon",
+  amount: "3",
+  min: "1",
+  max: "3",
+};
 
 export function useDeckCalculator() {
-  const [deckSize, setDeckSize] = useState<number | "">("");
-  const [handSize, setHandSize] = useState<number | "">("");
-  const [miscAmount, setMiscAmount] = useState(0);
-  const [miscMax, setMiscMax] = useState(0);
-  const [cardRows, setCardRows] = useState<CardRow[]>([INITIAL_CARD_ROW]);
-  const [nextId, setNextId] = useState(2);
-  const [probability, setProbability] = useState<number | "">("");
+  const [deckState, setDeckState] = useState({
+    deckSize: 40 as number | "",
+    handSize: 6 as number | "",
+    cardRows: [INITIAL_CARD_ROW] as CardRow[],
+  });
+
+  const [miscAmount, setMiscAmount] = useState(37);
+  const [miscMax, setMiscMax] = useState(5);
+  const [probability, setProbability] = useState<number | "">(39.43);
+  const nextIdRef = useRef(2);
 
   const cardAmounts = useMemo(() => {
-    return cardRows.map((row) => ({
+    return deckState.cardRows.map((row) => ({
       amount: Number.parseInt(row.amount) || 0,
       min: Number.parseInt(row.min) || 0,
     }));
-  }, [cardRows]);
+  }, [deckState.cardRows]);
 
   const { totalAmount, totalMin } = useMemo(() => {
     return {
@@ -27,16 +39,18 @@ export function useDeckCalculator() {
   }, [cardAmounts]);
 
   useEffect(() => {
-    const effectiveDeckSize = typeof deckSize === "number" ? deckSize : 0;
-    const effectiveHandSize = typeof handSize === "number" ? handSize : 0;
+    const effectiveDeckSize =
+      typeof deckState.deckSize === "number" ? deckState.deckSize : 0;
+    const effectiveHandSize =
+      typeof deckState.handSize === "number" ? deckState.handSize : 0;
 
     setMiscAmount(effectiveDeckSize - totalAmount);
     setMiscMax(effectiveHandSize - totalMin);
-  }, [deckSize, handSize, totalAmount, totalMin]);
+  }, [deckState.deckSize, deckState.handSize, totalAmount, totalMin]);
 
   const calculatorInputs = useCallback((): HypergeometricParams => {
-    const deckSizeInput = Number(deckSize);
-    const handSizeInput = Number(handSize);
+    const deckSizeInput = Number(deckState.deckSize);
+    const handSizeInput = Number(deckState.handSize);
 
     if (
       deckSizeInput <= 0 ||
@@ -53,7 +67,7 @@ export function useDeckCalculator() {
       throw new Error();
     }
 
-    const cardTypesInput = cardRows.map((row) => {
+    const cardTypesInput = deckState.cardRows.map((row) => {
       const amt = Number(row.amount);
       const min = Number(row.min);
       const max = Number(row.max);
@@ -72,7 +86,7 @@ export function useDeckCalculator() {
       miscAmt: miscAmtInput,
       miscMax: miscMaxInput,
     };
-  }, [deckSize, handSize, cardRows, miscAmount, miscMax]); // Added miscMax to dependencies
+  }, [deckState, miscAmount, miscMax]);
 
   useEffect(() => {
     const calculator = new HypergeometricCalculator();
@@ -91,39 +105,29 @@ export function useDeckCalculator() {
     }
   }, [calculatorInputs]);
 
-  const addRow = () => {
-    const newRow: CardRow = {
-      id: nextId,
-      name: "",
-      amount: "",
-      min: "",
-      max: "",
-    };
-    setCardRows([...cardRows, newRow]);
-    setNextId(nextId + 1);
-  };
-
-  const removeRow = (id: number) => {
-    if (cardRows.length > 1) {
-      setCardRows(cardRows.filter((row) => row.id !== id));
-    }
-  };
-
-  const updateRow = (index: number, field: keyof CardRow, value: string) => {
-    const newRows = cardRows.map((row, i) => {
-      if (i === index) {
-        const updatedValue =
-          field === "name" ? value : Math.max(0, Number(value));
-        return { ...row, [field]: updatedValue };
-      }
-      return row;
-    });
-    setCardRows(newRows);
-  };
+  const updateRow = useCallback(
+    (index: number, field: keyof CardRow, value: string) => {
+      setDeckState((prev) => ({
+        ...prev,
+        cardRows: prev.cardRows.map((row, i) =>
+          i === index
+            ? {
+                ...row,
+                [field]:
+                  field === "name"
+                    ? value
+                    : String(Math.max(0, Number(value) || 0)),
+              }
+            : row
+        ),
+      }));
+    },
+    []
+  );
 
   const handleNumberChange = useCallback(
     (index: number, field: "amount" | "min" | "max", value: string) => {
-      const parsed = Math.max(0, Number(value));
+      const parsed = Math.max(0, Number(value) || 0);
       if (!isNaN(parsed)) {
         updateRow(index, field, String(parsed));
       }
@@ -131,32 +135,64 @@ export function useDeckCalculator() {
     [updateRow]
   );
 
-  const handleDeckSizeChange = (value: string) => {
-    const newDeckSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
-    setDeckSize(newDeckSize);
-  };
+  const addRow = useCallback(() => {
+    const newRow: CardRow = {
+      id: nextIdRef.current,
+      name: "",
+      amount: "",
+      min: "",
+      max: "",
+    };
+    nextIdRef.current += 1;
+    setDeckState((prev) => ({
+      ...prev,
+      cardRows: [...prev.cardRows, newRow],
+    }));
+  }, []);
 
-  const handleHandSizeChange = (value: string) => {
-    const newHandSize = value === "" ? "" : Math.max(0, Number.parseInt(value));
-    if (typeof deckSize === "number") {
-      setHandSize(Math.min(newHandSize as number, deckSize));
-    } else {
-      setHandSize(newHandSize);
-    }
-  };
+  const removeRow = useCallback((id: number) => {
+    setDeckState((prev) => {
+      if (prev.cardRows.length <= 1) return prev;
+      return {
+        ...prev,
+        cardRows: prev.cardRows.filter((row) => row.id !== id),
+      };
+    });
+  }, []);
+
+  const handleDeckSizeChange = useCallback((value: string) => {
+    const newSize = value === "" ? "" : Math.max(0, parseInt(value) || 0);
+    setDeckState((prev) => ({
+      ...prev,
+      deckSize: newSize,
+      handSize:
+        typeof newSize === "number" && typeof prev.handSize === "number"
+          ? Math.min(prev.handSize, newSize)
+          : prev.handSize,
+    }));
+  }, []);
+
+  const handleHandSizeChange = useCallback((value: string) => {
+    const newSize = value === "" ? "" : Math.max(0, parseInt(value) || 0);
+    setDeckState((prev) => ({
+      ...prev,
+      handSize:
+        typeof prev.deckSize === "number"
+          ? Math.min(newSize as number, prev.deckSize)
+          : newSize,
+    }));
+  }, []);
 
   return {
-    deckSize,
-    handleDeckSizeChange,
-    handSize,
-    handleHandSizeChange,
+    ...deckState,
     miscAmount,
     miscMax,
-    cardRows,
+    probability,
     addRow,
     removeRow,
     updateRow,
     handleNumberChange,
-    probability,
+    handleDeckSizeChange,
+    handleHandSizeChange,
   };
 }

@@ -6,10 +6,8 @@ export interface CardRow {
   max: string;
 }
 
-export const INITIAL_CARD_ROW: CardRow = {
-  id: 1,
-  name: "",
-  amount: "",
-  min: "",
-  max: "",
-};
+export interface DeckState {
+  deckSize: number | "";
+  handSize: number | "";
+  cardRows: CardRow[];
+}

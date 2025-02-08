@@ -122,7 +122,7 @@ export default function DeckCalculator() {
           {/* Probability Display */}
           <div className="text-center py-4 font-medium">
             {probability === "" ? (
-              <span className="text-red-500">
+              <span className="text-gray-300">
                 Unable to calculate. Please fix the values.
               </span>
             ) : (
