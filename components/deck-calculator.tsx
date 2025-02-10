@@ -20,7 +20,6 @@ export default function DeckCalculator() {
     addRow,
     removeRow,
     updateRow,
-    handleNumberChange,
     probability,
   } = useDeckCalculator();
 
@@ -42,7 +41,6 @@ export default function DeckCalculator() {
               placeholder="40"
               value={deckSize}
               type="number"
-              min={0}
               onChange={(e) => handleDeckSizeChange(e.target.value)}
               className="w-32 bg-white/5 border-white/10 text-white rounded-lg"
             />
@@ -58,7 +56,6 @@ export default function DeckCalculator() {
               placeholder="6"
               value={handSize}
               type="number"
-              min={0}
               onChange={(e) => handleHandSizeChange(e.target.value)}
               className="w-32 bg-white/5 border-white/10 text-white rounded-lg"
             />
@@ -100,7 +97,6 @@ export default function DeckCalculator() {
                   row={row}
                   index={index}
                   updateRow={updateRow}
-                  handleNumberChange={handleNumberChange}
                   cardRowsLength={cardRows.length}
                   removeRow={removeRow}
                 />
