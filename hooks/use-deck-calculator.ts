@@ -1,4 +1,3 @@
-// hooks/use-deck-calculator.ts
 import { HypergeometricCalculator } from "@/lib/hypergeometric-calculator";
 import { CardRow } from "@/types/deck-calculator";
 import { HypergeometricParams } from "@/types/hypergeometric";
@@ -14,140 +13,105 @@ const INITIAL_CARD_ROW: CardRow = {
 
 export function useDeckCalculator() {
   const [deckState, setDeckState] = useState({
-    deckSize: 40 as number | "",
-    handSize: 6 as number | "",
+    deckSize: "40",
+    handSize: "6",
     cardRows: [INITIAL_CARD_ROW] as CardRow[],
   });
 
-  const [miscAmount, setMiscAmount] = useState(37);
-  const [miscMax, setMiscMax] = useState(5);
-  const [probability, setProbability] = useState<number | "">(39.43);
   const nextIdRef = useRef(2);
 
-  const cardAmounts = useMemo(() => {
-    return deckState.cardRows.map((row) => ({
-      amount: Number.parseInt(row.amount) || 0,
-      min: Number.parseInt(row.min) || 0,
-    }));
+  // Calculate card totals
+  const totals = useMemo(() => {
+    const amounts = deckState.cardRows.map((row) => Number(row.amount) || 0);
+    const mins = deckState.cardRows.map((row) => Number(row.min) || 0);
+
+    return {
+      totalAmount: amounts.reduce((sum, amount) => sum + amount, 0),
+      totalMin: mins.reduce((sum, min) => sum + min, 0),
+    };
   }, [deckState.cardRows]);
 
-  const { totalAmount, totalMin } = useMemo(() => {
-    return {
-      totalAmount: cardAmounts.reduce((sum, card) => sum + card.amount, 0),
-      totalMin: cardAmounts.reduce((sum, card) => sum + card.min, 0),
-    };
-  }, [cardAmounts]);
-
-  useEffect(() => {
-    const effectiveDeckSize =
-      typeof deckState.deckSize === "number" ? deckState.deckSize : 0;
-    const effectiveHandSize =
-      typeof deckState.handSize === "number" ? deckState.handSize : 0;
-
-    setMiscAmount(effectiveDeckSize - totalAmount);
-    setMiscMax(effectiveHandSize - totalMin);
-  }, [deckState.deckSize, deckState.handSize, totalAmount, totalMin]);
-
-  const calculatorInputs = useCallback((): HypergeometricParams => {
-    if (deckState.cardRows.length === 0) {
-      throw new Error();
-    }
-
-    const deckSizeInput = Number(deckState.deckSize);
-    const handSizeInput = Number(deckState.handSize);
-
-    if (
-      deckSizeInput <= 0 ||
-      handSizeInput <= 0 ||
-      handSizeInput > deckSizeInput
-    ) {
-      throw new Error();
-    }
-
-    const miscAmtInput = Number(miscAmount);
-    const miscMaxInput = Number(miscMax);
-
-    if (miscAmtInput < 0 || miscMaxInput < 0) {
-      throw new Error();
-    }
-
-    const cardTypesInput = deckState.cardRows.map((row) => {
-      const amt = Number(row.amount);
-      const min = Number(row.min);
-      const max = Number(row.max);
-
-      if (amt === 0 || min === 0 || max === 0 || max > amt || min > max) {
-        throw new Error();
-      }
-
-      return { amt, min, max };
-    });
+  // Calculate misc amounts
+  const misc = useMemo(() => {
+    const deckSizeNum = Number(deckState.deckSize) || 0;
+    const handSizeNum = Number(deckState.handSize) || 0;
 
     return {
-      deckSize: deckSizeInput,
-      handSize: handSizeInput,
-      cardTypes: cardTypesInput,
-      miscAmt: miscAmtInput,
-      miscMax: miscMaxInput,
+      amount: deckSizeNum - totals.totalAmount,
+      max: handSizeNum - totals.totalMin,
     };
-  }, [deckState, miscAmount, miscMax]);
+  }, [deckState.deckSize, deckState.handSize, totals]);
+
+  // Prepare calculator inputs and compute probability
+  const [probability, setProbability] = useState<number | "">(39.43);
 
   useEffect(() => {
     const calculator = new HypergeometricCalculator();
 
     try {
-      const params = calculatorInputs();
-      const probability = calculator.calculateProbability(params);
+      const deckSizeNum = Number(deckState.deckSize);
+      const handSizeNum = Number(deckState.handSize);
 
-      if (probability > 100) {
+      // Validate basic inputs
+      if (
+        !deckSizeNum ||
+        !handSizeNum ||
+        handSizeNum > deckSizeNum ||
+        misc.amount < 0 ||
+        misc.max < 0
+      ) {
         throw new Error();
       }
 
-      setProbability(probability);
-    } catch (error) {
+      // Prepare card types
+      const cardTypes = deckState.cardRows.map((row) => {
+        const amt = Number(row.amount) || 0;
+        const min = Number(row.min) || 0;
+        const max = Number(row.max) || 0;
+
+        if (amt < 0 || min < 0 || max < 0 || max > amt || min > max) {
+          throw new Error();
+        }
+
+        return { amt, min, max };
+      });
+
+      const params: HypergeometricParams = {
+        deckSize: deckSizeNum,
+        handSize: handSizeNum,
+        cardTypes,
+        miscAmt: misc.amount,
+        miscMax: misc.max,
+      };
+
+      const result = calculator.calculateProbability(params);
+      setProbability(result > 100 ? "" : result);
+    } catch {
       setProbability("");
     }
-  }, [calculatorInputs]);
+  }, [deckState, misc]);
 
+  // Row management
   const updateRow = useCallback(
     (index: number, field: keyof CardRow, value: string) => {
       setDeckState((prev) => ({
         ...prev,
         cardRows: prev.cardRows.map((row, i) =>
-          i === index
-            ? {
-                ...row,
-                [field]:
-                  field === "name"
-                    ? value
-                    : String(Math.max(0, Number(value) || 0)),
-              }
-            : row
+          i === index ? { ...row, [field]: value } : row
         ),
       }));
     },
     []
   );
 
-  const handleNumberChange = useCallback(
-    (index: number, field: "amount" | "min" | "max", value: string) => {
-      const parsed = Math.max(0, Number(value) || 0);
-      if (!isNaN(parsed)) {
-        updateRow(index, field, String(parsed));
-      }
-    },
-    [updateRow]
-  );
-
   const addRow = useCallback(() => {
     const newRow: CardRow = {
-      id: nextIdRef.current,
+      id: nextIdRef.current++,
       name: "",
       amount: "",
       min: "",
       max: "",
     };
-    nextIdRef.current += 1;
     setDeckState((prev) => ({
       ...prev,
       cardRows: [...prev.cardRows, newRow],
@@ -161,38 +125,31 @@ export function useDeckCalculator() {
     }));
   }, []);
 
+  // Size handlers
   const handleDeckSizeChange = useCallback((value: string) => {
-    const newSize = value === "" ? "" : Math.max(0, parseInt(value) || 0);
     setDeckState((prev) => ({
       ...prev,
-      deckSize: newSize,
-      handSize:
-        typeof newSize === "number" && typeof prev.handSize === "number"
-          ? Math.min(prev.handSize, newSize)
-          : prev.handSize,
+      deckSize: value,
+      // Ensure hand size doesn't exceed deck size
+      handSize: Number(value) < Number(prev.handSize) ? value : prev.handSize,
     }));
   }, []);
 
   const handleHandSizeChange = useCallback((value: string) => {
-    const newSize = value === "" ? "" : Math.max(0, parseInt(value) || 0);
     setDeckState((prev) => ({
       ...prev,
-      handSize:
-        typeof prev.deckSize === "number"
-          ? Math.min(newSize as number, prev.deckSize)
-          : newSize,
+      handSize: Number(value) > Number(prev.deckSize) ? prev.deckSize : value,
     }));
   }, []);
 
   return {
     ...deckState,
-    miscAmount,
-    miscMax,
+    miscAmount: misc.amount,
+    miscMax: misc.max,
     probability,
     addRow,
     removeRow,
     updateRow,
-    handleNumberChange,
     handleDeckSizeChange,
     handleHandSizeChange,
   };
