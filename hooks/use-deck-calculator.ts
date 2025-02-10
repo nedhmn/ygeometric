@@ -76,7 +76,7 @@ export function useDeckCalculator() {
       const min = Number(row.min);
       const max = Number(row.max);
 
-      if (amt === 0 || min === 0 || max === 0 || max > amt || min > max) {
+      if (amt < 0 || min < 0 || max < 0 || max > amt || min > max) {
         throw new Error();
       }
 
